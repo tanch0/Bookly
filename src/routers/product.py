@@ -51,7 +51,7 @@ async def create(
     discount: float = Form(...),
     rating: float = Form(...),
     description: str = Form(...),
-    file: UploadFile = File(...),  
+    files: List[UploadFile] = File(...),
 ):
     product_data = ProductCreate(
         name=name,
@@ -63,10 +63,10 @@ async def create(
         discount=discount,
         rating=rating,
         description=description,
-        image=None, 
+        image=None,
     )
 
-    return await create_product(product_data, db, file)
+    return await create_product(product_data, db, files)
 
 
 # PUT update an existing product
@@ -74,9 +74,33 @@ async def create(
     "/{product_id}", response_model=Product, status_code=status.HTTP_200_OK
 )
 async def update(
-    product_id: UUID, product: ProductUpdate, db: db_dependency, file: UploadFile = None
+    product_id: UUID,
+    db: db_dependency,
+    name: str = Form(...),
+    price: float = Form(...),
+    category_id: UUID = Form(...),
+    supplier_id: UUID = Form(...),
+    quantity: int = Form(...),
+    reorder_level: int = Form(...),
+    discount: float = Form(...),
+    rating: float = Form(...),
+    description: str = Form(...),
+    files: List[UploadFile] = File(None),
 ):
-    return await update_product(product_id, product, db, file)
+    product_data = ProductUpdate(
+        name=name,
+        price=price,
+        category_id=category_id,
+        supplier_id=supplier_id,
+        quantity=quantity,
+        reorder_level=reorder_level,
+        discount=discount,
+        rating=rating,
+        description=description,
+        image=None,
+    )
+
+    return await update_product(product_id, product_data, db, files)
 
 
 # DELETE a product
