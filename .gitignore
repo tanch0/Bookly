@@ -1,0 +1,91 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual Environment
+venv/
+env/
+.env
+.venv
+env.bak/
+venv.bak/
+booklyenv/
+
+# IDE and Editor Files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Dependency Directories
+lib/
+libs/
+include/
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Database and Logs
+*.db
+*.sqlite3
+*.log
+logs/
+
+# Environment and Secret Files
+.env
+.env.local
+.env.development
+.env.production
+*.env
+secrets.json
+
+# File Uploads and Media
+uploads/
+media/
+static/
+!static/.gitkeep
+
+# Compiled Python
+*.pyc
+*.pyo
+*.pyd
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Mypy
+.mypy_cache/
+
+# Docker
+.docker/
+
+# OS Generated Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project Specific Ignores
+config.py
+*.cfg
