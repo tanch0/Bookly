@@ -5,14 +5,8 @@ from uuid import uuid4, UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from src.models.product import Product
-import secrets
-from PIL import Image
-from pathlib import Path
-import aiofiles
+from typing import List
 from src.utilities.fileupload import save_file, delete_file
-
-UPLOAD_DIR = Path("../static/images")
-UPLOAD_DIR.mkdir(exist_ok=True, parents=True)
 
 
 # GET all products
@@ -31,18 +25,22 @@ async def get_product_by_id(product_id: UUID, db: AsyncSession):
         status_code=status.HTTP_404_NOT_FOUND, detail="Product not found"
     )
 
-
-async def create_product(product: ProductCreate, db: AsyncSession, file: UploadFile):
+# CREATE a new product
+async def create_product(
+    product: ProductCreate, db: AsyncSession, files: List[UploadFile] = None
+):
     product_id = str(uuid4())
 
-    # Save the uploaded file and get the filename
-    token_name = await save_file(file)
+    image_filenames = []
+    for file in files:
+        filename = await save_file(file)
+        image_filenames.append(filename)
 
-    # Create a new product instance
+    image_str = ",".join(image_filenames)
     new_product = Product(
         id=product_id,
         name=product.name,
-        image=token_name,
+        image=image_str,
         price=product.price,
         category_id=product.category_id,
         supplier_id=product.supplier_id,
@@ -55,7 +53,6 @@ async def create_product(product: ProductCreate, db: AsyncSession, file: UploadF
         updated_at=datetime.now(),
     )
 
-    # Save to the database
     db.add(new_product)
     await db.commit()
     await db.refresh(new_product)
@@ -65,7 +62,10 @@ async def create_product(product: ProductCreate, db: AsyncSession, file: UploadF
 
 # UPDATE an existing product
 async def update_product(
-    product_id: UUID, product: ProductUpdate, db: AsyncSession, file: UploadFile = None
+    product_id: UUID,
+    product: ProductUpdate,
+    db: AsyncSession,
+    files: List[UploadFile] = None,
 ):
     result = await db.execute(select(Product).filter(Product.id == product_id))
     product_to_update = result.scalars().first()
@@ -75,7 +75,6 @@ async def update_product(
             status_code=status.HTTP_404_NOT_FOUND, detail="Product not found"
         )
 
-    # Update product fields
     product_to_update.name = product.name
     product_to_update.price = product.price
     product_to_update.category_id = product.category_id
@@ -87,15 +86,19 @@ async def update_product(
     product_to_update.description = product.description
     product_to_update.updated_at = datetime.now()
 
-    # Handle file upload if a new file is provided
-    if file:
-        # Save the new file and delete the old one
-        new_filename = await save_file(file)
-        if product_to_update.image:
-            delete_file(product_to_update.image)
-        product_to_update.image = new_filename
+    if files:
+        new_filenames = []
+        for file in files:
+            new_filename = await save_file(file)
+            new_filenames.append(new_filename)
 
-    # Commit the changes to the database
+        if product_to_update.image:
+            old_images = product_to_update.image.split(",")
+            for old_image in old_images:
+                delete_file(old_image)
+
+        product_to_update.image = ",".join(new_filenames)
+
     await db.commit()
     await db.refresh(product_to_update)
 
@@ -107,11 +110,16 @@ async def delete_product(product_id: UUID, db: AsyncSession):
     result = await db.execute(select(Product).filter(Product.id == product_id))
     product_to_delete = result.scalars().first()
 
-    if product_to_delete:
-        await db.delete(product_to_delete)
-        await db.commit()
-        return {"detail": "Product deleted successfully"}
+    if not product_to_delete:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Product not found"
+        )
+    if product_to_delete.image:
+        images = product_to_delete.image.split(",")
+        for image in images:
+            delete_file(image) 
 
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND, detail="Product not found"
-    )
+    await db.delete(product_to_delete)
+    await db.commit()
+
+    return {"detail": "Product and associated images deleted successfully"}
