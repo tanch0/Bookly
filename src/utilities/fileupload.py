@@ -5,7 +5,7 @@ from PIL import Image
 import os
 from fastapi import HTTPException, UploadFile, status
 
-UPLOAD_DIR = Path("../static/images")
+UPLOAD_DIR = Path(__file__).resolve().parent / "static/images"
 
 # Ensure the directory exists
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
@@ -37,10 +37,9 @@ async def save_file(file: UploadFile) -> str:
             detail=f"Failed to save the file: {str(e)}",
         )
 
-    # Resize the image while maintaining aspect ratio
     try:
         img = Image.open(file_path)
-        img.thumbnail((400, 400))  # Resize while maintaining aspect ratio
+        img.thumbnail((400, 400))  
         img.save(file_path)
     except Exception as e:
         raise HTTPException(
