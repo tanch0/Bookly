@@ -7,7 +7,7 @@ from src.modules.categories.service import (
     update_category,
     delete_category
 )
-from src.schemas.category import Category, CategoryUpdate, CategoryCreate
+from src.schemas.category import Category, CategoryUpdate, CategoryCreate, PaginatedCategory
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.database.config import get_db
@@ -16,9 +16,9 @@ from typing_extensions import Annotated
 categories_router = APIRouter()
 db_dependency = Annotated[AsyncSession, Depends(get_db)]
 
-@categories_router.get("/", response_model=List[Category], status_code=status.HTTP_200_OK)
-async def get_all(db: db_dependency):
-    return await get_all_categories(db)
+@categories_router.get("/", response_model=PaginatedCategory, status_code=status.HTTP_200_OK)
+async def get_all(db: db_dependency, skip: int = 0, limit: int = 10):
+    return await get_all_categories(db, skip, limit)
 
 @categories_router.get("/{category_id}", response_model=Category, status_code=status.HTTP_200_OK)
 async def get(category_id: UUID, db: db_dependency):
