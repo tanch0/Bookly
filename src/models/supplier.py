@@ -4,6 +4,8 @@ from datetime import datetime
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 from uuid import uuid4
+from sqlalchemy.dialects.postgresql import ENUM
+from src.models.Enum.Status import StatusEnum
 
 
 class Supplier(Base):
@@ -12,6 +14,7 @@ class Supplier(Base):
     name = Column(String, unique=True, index=True, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
     phone = Column(String, unique=True, index=True, nullable=False)
+    status = Column(ENUM(StatusEnum), nullable=False)
     address = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

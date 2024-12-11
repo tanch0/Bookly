@@ -5,6 +5,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 from uuid import uuid4
 from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.dialects.postgresql import ENUM
+from src.models.Enum.Status import StatusEnum
 
 
 class Product(Base):
@@ -14,6 +16,7 @@ class Product(Base):
     name = Column(String, unique=True, index=True, nullable=False)
     price = Column(Integer, nullable=False)
     image = Column(JSON, nullable=True)
+    status = Column(ENUM(StatusEnum), nullable=False)
     category_id = Column(UUID(as_uuid=True), ForeignKey("categories.id"), nullable=False)
     supplier_id = Column(UUID(as_uuid=True), ForeignKey("suppliers.id"), nullable=False)
     quantity = Column(Integer, nullable=False)
